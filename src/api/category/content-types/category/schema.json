@@ -1,0 +1,60 @@
+{
+  "kind": "collectionType",
+  "collectionName": "categories",
+  "info": {
+    "singularName": "category",
+    "pluralName": "categories",
+    "displayName": "Category"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction.transaction",
+      "mappedBy": "category"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "expense",
+        "income"
+      ]
+    },
+    "icon": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::category.category"
+    },
+    "budget_limit": {
+      "type": "decimal"
+    },
+    "is_system": {
+      "type": "boolean"
+    },
+    "budgets": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::budget.budget",
+      "mappedBy": "categories"
+    },
+    "recurring_transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recurring-transaction.recurring-transaction",
+      "mappedBy": "category"
+    }
+  }
+}

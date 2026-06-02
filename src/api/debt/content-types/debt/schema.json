@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "debts",
+  "info": {
+    "singularName": "debt",
+    "pluralName": "debts",
+    "displayName": "Debt"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "i_owe",
+        "owe_me"
+      ]
+    },
+    "person": {
+      "type": "string"
+    },
+    "due_date": {
+      "type": "date"
+    },
+    "is_paid": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "text"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "debts"
+    }
+  }
+}

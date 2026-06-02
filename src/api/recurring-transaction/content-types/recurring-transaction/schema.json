@@ -1,0 +1,68 @@
+{
+  "kind": "collectionType",
+  "collectionName": "recurring_transactions",
+  "info": {
+    "singularName": "recurring-transaction",
+    "pluralName": "recurring-transactions",
+    "displayName": "RecurringTransaction"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "decimal"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "expense",
+        "income"
+      ]
+    },
+    "frequency": {
+      "type": "enumeration",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "quarterly",
+        "yearly"
+      ]
+    },
+    "start_date": {
+      "type": "date"
+    },
+    "end_date": {
+      "type": "date"
+    },
+    "category": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "recurring_transactions"
+    },
+    "account": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::account.account",
+      "inversedBy": "recurring_transactions"
+    },
+    "last_processed": {
+      "type": "date"
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "recurring_transactions"
+    }
+  }
+}

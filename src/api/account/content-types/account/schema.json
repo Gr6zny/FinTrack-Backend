@@ -1,0 +1,77 @@
+{
+  "kind": "collectionType",
+  "collectionName": "accounts",
+  "info": {
+    "singularName": "account",
+    "pluralName": "accounts",
+    "displayName": "Account"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction.transaction",
+      "mappedBy": "account_from"
+    },
+    "transaction": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::transaction.transaction",
+      "mappedBy": "account_to"
+    },
+    "type": {
+      "type": "enumeration",
+      "enum": [
+        "cash",
+        "bank_card",
+        "credit_card",
+        "digital",
+        "savings",
+        "investment"
+      ]
+    },
+    "name": {
+      "type": "string"
+    },
+    "balance": {
+      "type": "decimal"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "bank_name": {
+      "type": "string"
+    },
+    "last_four_digits": {
+      "type": "string"
+    },
+    "credit_limit": {
+      "type": "decimal"
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "color": {
+      "type": "string"
+    },
+    "icon": {
+      "type": "string"
+    },
+    "recurring_transactions": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::recurring-transaction.recurring-transaction",
+      "mappedBy": "account"
+    },
+    "users_permissions_user": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "plugin::users-permissions.user",
+      "inversedBy": "account"
+    }
+  }
+}
