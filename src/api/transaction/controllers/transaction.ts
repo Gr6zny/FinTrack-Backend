@@ -20,6 +20,43 @@ async function applyTransaction(amount: number, type: string, accountFrom: numbe
   }
 }
 
+async function updateBudgetSpent(
+  userId: number,
+  categoryId: number | undefined | null,
+  date: string,
+  delta: number,
+) {
+  if (!categoryId || delta === 0) return;
+
+  try {
+    const budgets = await strapi.db.query('api::budget.budget').findMany({
+      where: {
+        users_permissions_user: userId,
+        start_date: { $lte: date },
+        end_date: { $gte: date },
+      },
+      populate: ['categories'],
+    });
+
+    for (const budget of budgets as any[]) {
+      if (budget.categories?.some((c: any) => c.id === categoryId)) {
+        const current = budget.spent_amount || 0;
+        await strapi.db.query('api::budget.budget').update({
+          where: { id: budget.id },
+          data: { spent_amount: Math.max(0, current + delta) },
+        });
+      }
+    }
+  } catch (e) {
+    console.error('updateBudgetSpent error:', e);
+  }
+}
+
+function getCategoryId(entity: any): number | null {
+  if (!entity.category) return null;
+  return typeof entity.category === 'object' ? entity.category.id : entity.category;
+}
+
 export default factories.createCoreController('api::transaction.transaction', ({ strapi }) => ({
 
   async find(ctx) {
@@ -57,6 +94,9 @@ export default factories.createCoreController('api::transaction.transaction', ({
       },
     });
     await applyTransaction(data.amount, data.type, data.account_from, data.account_to);
+    if (data.type === 'expense') {
+      await updateBudgetSpent(user.id, data.category, data.date, data.amount);
+    }
     const sanitizedResult = await this.sanitizeOutput(result, ctx);
     return this.transformResponse(sanitizedResult);
   },
@@ -65,7 +105,7 @@ export default factories.createCoreController('api::transaction.transaction', ({
     const { id } = ctx.params;
     const { user } = ctx.state;
     const entity: any = await strapi.entityService.findOne('api::transaction.transaction', id, {
-      populate: { users_permissions_user: { fields: ['id'] } },
+      populate: { users_permissions_user: { fields: ['id'] }, category: true },
     });
     if (!entity || entity.users_permissions_user?.id !== user.id) return ctx.notFound();
     const { data } = ctx.request.body;
@@ -78,6 +118,19 @@ export default factories.createCoreController('api::transaction.transaction', ({
     const oldAccountTo = entity.account_to?.id || entity.account_to;
     await applyTransaction(-oldAmount, oldType, oldAccountFrom, oldAccountTo);
     await applyTransaction(data.amount, data.type, data.account_from, data.account_to);
+
+    const oldCatId = getCategoryId(entity);
+    const newCatId = data.category ?? oldCatId;
+    const oldDate = entity.date;
+    const newDate = data.date || oldDate;
+
+    if (oldType === 'expense') {
+      await updateBudgetSpent(user.id, oldCatId, oldDate, -oldAmount);
+    }
+    if ((data.type ?? oldType) === 'expense') {
+      await updateBudgetSpent(user.id, newCatId, newDate, data.amount ?? oldAmount);
+    }
+
     const sanitizedResult = await this.sanitizeOutput(result, ctx);
     return this.transformResponse(sanitizedResult);
   },
@@ -86,7 +139,7 @@ export default factories.createCoreController('api::transaction.transaction', ({
     const { id } = ctx.params;
     const { user } = ctx.state;
     const entity: any = await strapi.entityService.findOne('api::transaction.transaction', id, {
-      populate: { users_permissions_user: { fields: ['id'] } },
+      populate: { users_permissions_user: { fields: ['id'] }, category: true },
     });
     if (!entity || entity.users_permissions_user?.id !== user.id) return ctx.notFound();
     const amount = entity.amount;
@@ -94,6 +147,9 @@ export default factories.createCoreController('api::transaction.transaction', ({
     const accountFrom = entity.account_from?.id || entity.account_from;
     const accountTo = entity.account_to?.id || entity.account_to;
     await applyTransaction(-amount, type, accountFrom, accountTo);
+    if (type === 'expense') {
+      await updateBudgetSpent(user.id, getCategoryId(entity), entity.date, -amount);
+    }
     return super.delete(ctx);
   },
 }));
